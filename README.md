@@ -12,8 +12,8 @@ http://docs.matrixcalc.apiary.io/
 http://matrixcalc.demecko.com/api/
 
 #Test
-
-!!! v požiadavkách som musel upraviť 
+!!! Test mi vyhodnotilo za chybný aj ked posielal správnu hlavičku a odpoved podľa požiadaviek. 
+!!! v matrixcalc.apib som musel upraviť 
 
 Content-type: application/json
 
@@ -51,5 +51,5 @@ http://blog.apiary.io/2013/10/17/How-to-test-api-with-api-blueprint-and-dredd/
 PHP framework pre tvorbu API 
 http://www.slimframework.com/
 
-Knižnica pre operácia nad maticami:
+Knižnica pre operácie s maticami:
 https://github.com/chippyash/Matrix
