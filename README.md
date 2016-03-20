@@ -46,7 +46,7 @@ bash /test/test.sh
 Viac info o teste a návod 
 http://blog.apiary.io/2013/10/17/How-to-test-api-with-api-blueprint-and-dredd/
 
-#Použité technológie frameworky knižnice: 
+#Použité technológie frameworky knižnice
 
 PHP framework pre tvorbu API 
 http://www.slimframework.com/
