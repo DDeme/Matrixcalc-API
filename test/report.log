@@ -1,0 +1,13 @@
+info: Beginning Dredd testing...
+pass: GET /add/2-3/2-1 duration: 15266ms
+pass: GET /subtract/2-3/2-1 duration: 15200ms
+pass: GET /multiply/2-3/2-1 duration: 15196ms
+pass: GET /divide/2-3/2-1 duration: 15197ms
+pass: GET /divide/2-3/2-1 duration: 5219ms
+pass: GET /sum?range=2-x duration: 5201ms
+pass: GET /product?range=2-x duration: 5194ms
+pass: GET /max?range=2-x duration: 5188ms
+pass: GET /min?range=2-x duration: 5185ms
+pass: GET /average?range=2-x duration: 5190ms
+complete: 10 passing, 0 failing, 0 errors, 0 skipped, 10 total
+complete: Tests took 92055ms

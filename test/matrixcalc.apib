@@ -1,0 +1,424 @@
+FORMAT: 1A
+HOST: http://matrixcalc.apiblueprint.org/
+
+# Matrix Calculator
+
+Matrix Calculator is a service that performs simple arithmetic
+operations over two&ndash;dimensional matrices.
+
+This service is JSON-only, meaning every request and response must be
+valid JSON message, that is correctly encoded and uses the `application/json;charset=utf-8`
+MIME type.
+
+## Operations, Requests and Responses
+
+There are two types of operations:
+- simple arithmetic operations with two mandatory parameters
+- whole matrix (or ranged) operations
+
+The differences between the two types will be described later in the document,
+but the request payload and the response format are common for every operation.
+
+### Requests
+
+Every request is made using HTTP `GET` method on different operations. Every
+request MUST contain a JSON payload, that contains a M-by-N numeric matrix
+as in example below:
+
+        {
+            "matrix": [
+                [1, 2, 3],
+                [4, 5, 6],
+                [7, 8, 9]
+            ]
+        }
+
+Each matrix row MUST contain the same numbers of elements.
+
+### Succes Response
+
+Succesful operations always return a JSON message with one mandatory
+`result` field. The value is a number.
+
+Example:
+
+        {
+            "result": 42
+        }
+
+
+### Error Response
+
+Every error response is also a valid JSON message, that contains one
+mandatory `error` string field.
+
+Example:
+
+        {
+            "error": "The '3-5' position is out-of-range for the matrix."
+        }
+
+The service handles differently errors caused by a bad requests and errors
+that happend during calculations.
+
+#### Errors in the Request
+
+If there is an error in the request, the service responds with HTTP code `422`.
+In the response payload there always is a message describing the problem,
+so the consumer knows what to fix in the request.
+
+These are just few examples of what can happen in the request itself.
+
+- the matrix itself is invalid (e.g. one of the rows has different number of elements)
+- the position or the range used as a parameter is in incorrect format
+- the position or the range is out of the matrix scope (e.g. asking for a third column in a two-column matrix)
+- operation isn't defined over the used values
+
+
+#### Errors during calculation
+
+If the request is alright and an unexpected error happens on the server
+a response with HTTP code `500` is returned with an apology.
+
+
+# Group Simple Operations with Two Operands
+
+All following operations need two parameters. The parameters describe
+positions in the matrix. Values at these positions are then used as
+operands for the operations.
+
+A position in the matrix is declared by its row and column coordinates
+in the `row-col` format. The positions start from number 1.
+
+For example, if you want to refer to a value
+in a **third row** and a **second column** you would use a `3-2` position.
+
+
+## Addition [/add/{position_a}/{position_b}]
+
++ Parameters
+    + position_a: `2-3` (string) - position of the first value to add
+    + position_b: `2-1` (string) - position of the second value to add
+
+### Add values at positions [GET]
+
+Add values at any two positions in a matrix.
+
++ Request Add two values (application/json;charset=utf-8)
+
+        {
+            "matrix": [
+                [1, 2, 3],
+                [4, 5, 6],
+                [7, 8, 9]
+            ]
+        }
+
++ Response 200 (application/json;charset=utf-8)
+
+    + Attributes (object)
+        + result (number, required) - The result of the addition
+
+    + Body
+
+            {
+                "result": 10
+            }
+
+
+## Subtraction [/subtract/{position_a}/{position_b}]
+
++ Parameters
+    + position_a: `2-3` (string) - position of the first value to add
+    + position_b: `2-1` (string) - position of the second value to add
+
+### Subtract values at positions [GET]
+
+Subtract values at any two positions in a matrix.
+
++ Request Subtract two values (application/json;charset=utf-8)
+
+        {
+            "matrix": [
+                [1, 2, 3],
+                [4, 5, 6],
+                [7, 8, 9]
+            ]
+        }
+
++ Response 200 (application/json;charset=utf-8)
+
+    + Attributes (object)
+        + result (number, required) - The result of the subtraction
+
+    + Body
+
+            {
+                "result": 2
+            }
+
+
+
+## Multiplication [/multiply/{position_a}/{position_b}]
+
++ Parameters
+    + position_a: `2-3` (string) - position of the first value to add
+    + position_b: `2-1` (string) - position of the second value to add
+
+### Multiply values at positions [GET]
+
+Multiply values at any two positions in a matrix.
+
++ Request Multiply two values (application/json;charset=utf-8)
+
+        {
+            "matrix": [
+                [1, 2, 3],
+                [4, 5, 6],
+                [7, 8, 9]
+            ]
+        }
+
++ Response 200 (application/json;charset=utf-8)
+
+    + Attributes (object)
+        + result (number, required) - The result of the multiplication
+
+    + Body
+
+            {
+                "result": 24
+            }
+
+
+
+## Division [/divide/{position_a}/{position_b}]
+
++ Parameters
+    + position_a: `2-3` (string) - position of the first value to add
+    + position_b: `2-1` (string) - position of the second value to add
+
+### Divide values at positions [GET]
+
+Divide values at any two positions in a matrix.
+In case of *division by zero* return an error message.
+
++ Request Divide two values (application/json;charset=utf-8)
+
+        {
+            "matrix": [
+                [1, 2, 3],
+                [4, 5, 6],
+                [7, 8, 9]
+            ]
+        }
+
++ Response 200 (application/json;charset=utf-8)
+
+    + Attributes (object)
+        + result (number, required) - The result of the division
+
+    + Body
+
+            {
+                "result": 1.5
+            }
+
+
++ Request Division by zero (application/json;charset=utf-8)
+
+        {
+            "matrix": [
+                [1, 2, 3],
+                [0, 5, 6],
+                [7, 8, 9]
+            ]
+        }
+
++ Response 422 (application/json;charset=utf-8)
+
+    + Attributes (object)
+        + error (string, required) - The description of the problem
+
+    + Body
+
+            {
+                "error": "Division by zero is not defined"
+            }
+
+
+
+# Group Ranged Operations
+
+These operations work either over the whole matrix or, optionally, only over
+a specified range.
+
+A range, for simplicity sake, is just a row or a column in a matrix. It can be
+refered to by using an `x` to mark the part of coordinate that should
+be taken whole:
+
+- if you want to refer to the first row, use `1-x`
+- if you want the second column, use `x-2`
+
+
+## Sum [/sum{?range}]
+
++ Parameters
+    + range: `2-x` (string, optional) - a row or a column to be summed
+
+### Sum values [GET]
+
+Sum all values in a matrix. If a range is specified, only values in the
+range will be summed.
+
++ Request Calculate Sum (application/json;charset=utf-8)
+
+        {
+            "matrix": [
+                [1, 2, 3],
+                [4, 5, 6],
+                [7, 8, 9]
+            ]
+        }
+
++ Response 200 (application/json;charset=utf-8)
+
+    + Attributes (object)
+        + result (number, required) - The sum of the values in the range
+
+    + Body
+
+            {
+                "result": 15
+            }
+
+
+## Product [/product{?range}]
+
++ Parameters
+    + range: `2-x` (string) - a row or a column, whose values should be multiplied
+
+### Multiply values [GET]
+
+Multiplie all values in a matrix. If a range is specified, only values in the
+range will be multiplied.
+
++ Request Calculate product (application/json;charset=utf-8)
+
+        {
+            "matrix": [
+                [1, 2, 3],
+                [4, 5, 6],
+                [7, 8, 9]
+            ]
+        }
+
++ Response 200 (application/json;charset=utf-8)
+
+    + Attributes (object)
+        + result (number, required) - The sum of the values in the range
+
+    + Body
+
+            {
+                "result": 120
+            }
+
+## Maximum [/max{?range}]
+
++ Parameters
+    + range: `2-x` (string) - a row or a column, where a maximum should be found
+
+### Find the highest value [GET]
+
+Find the highest value in a matrix in the message body.
+Optionally, you can select a range to limit the values taken
+into the calculation.
+
++ Request Find maximum value (application/json;charset=utf-8)
+
+        {
+            "matrix": [
+                [1, 2, 3],
+                [4, 5, 6],
+                [7, 8, 9]
+            ]
+        }
+
++ Response 200 (application/json;charset=utf-8)
+
+    + Attributes (object)
+        + result (number, required) - The maximum value
+
+    + Body
+
+            {
+                "result": 6
+            }
+
+
+## Minimum [/min{?range}]
+
++ Parameters
+    + range: `2-x` (string) - a row or a column, where a maximum should be found
+
+### Find the lowest value [GET]
+
+Find the lowest value in a matrix in the message body.
+Optionally, you can select a range to limit the values taken
+into the calculation.
+
++ Request Find minimum value (application/json;charset=utf-8)
+
+        {
+            "matrix": [
+                [1, 2, 3],
+                [4, 5, 6],
+                [7, 8, 9]
+            ]
+        }
+
++ Response 200 (application/json;charset=utf-8)
+
+    + Attributes (object)
+        + result (number, required) - The mimum value
+
+    + Body
+
+            {
+                "result": 4
+            }
+
+
+## Average [/average{?range}]
+
++ Parameters
+    + range: `2-x` (string) - a row or a column, where an average value
+    should be calculated
+
+### Find the highest value [GET]
+
+Find the average value in a matrix in the message body.
+Optionally, you can select a range to limit the values
+taken into the calculation.
+
++ Request Find average value (application/json;charset=utf-8)
+
+        {
+            "matrix": [
+                [1, 2, 3],
+                [4, 5, 6],
+                [7, 8, 9]
+            ]
+        }
+
++ Response 200 (application/json;charset=utf-8)
+
+    + Attributes (object)
+        + result (number, required) - The average value
+
+    + Body
+
+            {
+                "result": 5
+            }
